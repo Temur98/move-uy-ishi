@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
 import lombok.extern.slf4j.Slf4j;
+import uz.najottalim.movieapp.models.Director;
 import uz.najottalim.movieapp.models.Genre;
 import uz.najottalim.movieapp.models.Movie;
 import uz.najottalim.movieapp.repos.DirectorRepo;
@@ -194,7 +195,8 @@ public class StreamMovieAppExercise {
     }
 
     @Test
-    @DisplayName("Har bitta rejiossor qaysi janrda o'rtacha reytingi eng ko'p ekanligini chiqaring")
+    @DisplayName("Har bitta rejiossor qaysi janrda o'rtacha reytingi eng ko'p " +
+            "ekanligini chiqaring")
     public void exercise14() {
 //        directorRepo.findAll()
 //                .stream()
@@ -203,14 +205,32 @@ public class StreamMovieAppExercise {
 //                        Collectors.mapping(director -> director.getMovies(),
 //                                Collectors.toList())
 //                ));
-        directorRepo.findAll()
+        Map<Director, Genre> directorOptionalMap = directorRepo.findAll()
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
                         director -> {
+                            var rejissorOlganKinolar = director.getMovies();
 
+                            var genreToAverageRating = genreRepo.findAll()
+                                    .stream()
+                                    .collect(Collectors.toMap(Function.identity(),
+                                            genre -> rejissorOlganKinolar.stream()
+                                                    .filter(rejissorOlganKino -> rejissorOlganKino.getGenres()
+                                                            .contains(genre))
+                                                    .mapToDouble(Movie::getRating)
+                                                    .average()
+                                                    .orElse(-1)));
+                            return genreToAverageRating.entrySet()
+                                    .stream()
+                                    .max(Comparator.comparingDouble(Map.Entry::getValue))
+                                    .map(Map.Entry::getKey)
+                                    .get();
                         }
-                ))
+                ));
+        directorOptionalMap.forEach((rejissor, janr) -> {
+            System.out.println(rejissor + " : " + janr);
+        });
     }
 
     @Test
