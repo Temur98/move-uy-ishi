@@ -1,6 +1,7 @@
 package uz.najottalim.movieapp;
 
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,10 @@ import uz.najottalim.movieapp.repos.DirectorRepo;
 import uz.najottalim.movieapp.repos.GenreRepo;
 import uz.najottalim.movieapp.repos.MovieRepo;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class StreamMovieAppExercise {
@@ -67,7 +70,39 @@ public class StreamMovieAppExercise {
     @Test
     @DisplayName("Har bitta rejissorning olgan kinolar sonini chiqaring")
     public void exercise2() {
+        var mapToCount = directorRepo.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        director -> (long) director.getMovies().size(),
+                        Long::sum
+                ));
+//        mapToCount.forEach((key, value) -> {
+//            System.out.println(key.getName() + " : " + value);
+//        });
+        var map = directorRepo.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.flatMapping(director -> director.getMovies().stream(),
+                                Collectors.counting())
+                ));
+        map.forEach((key, value) -> {
+            System.out.println(key + " : " + value);
+        });
+        assertListEquals(map.values(), mapToCount.values());
+    }
 
+    <T> void assertListEquals(Collection<T> aa, Collection<T> bb) {
+        final String exceptionMessage = "Collections is not equals";
+        if (aa.size() != bb.size())
+            throw new RuntimeException(exceptionMessage);
+
+        for (T element : aa) {
+            if (!bb.contains(element)) {
+                throw new RuntimeException(exceptionMessage);
+            }
+        }
     }
 
     @Test
@@ -85,7 +120,20 @@ public class StreamMovieAppExercise {
     @Test
     @DisplayName("har bir yilda olingan kinolarni o'rtacha reytingini chiqaring")
     public void exercise10() {
+        /*
+        2001 -> 4.11
+        1999 -> 2.2
+         */
 
+        var yearToRating = movieRepo.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        Movie::getYear,
+                        Collectors.averagingDouble(Movie::getRating)
+                ));
+        yearToRating.forEach((key, value) -> {
+            System.out.println(key + ":" + String.format("%.02f", value));
+        });
     }
 
     @Test
@@ -148,7 +196,21 @@ public class StreamMovieAppExercise {
     @Test
     @DisplayName("Har bitta rejiossor qaysi janrda o'rtacha reytingi eng ko'p ekanligini chiqaring")
     public void exercise14() {
+//        directorRepo.findAll()
+//                .stream()
+//                .collect(Collectors.groupingBy(
+//                        Function.identity(),
+//                        Collectors.mapping(director -> director.getMovies(),
+//                                Collectors.toList())
+//                ));
+        directorRepo.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        director -> {
 
+                        }
+                ))
     }
 
     @Test
