@@ -81,6 +81,7 @@ public class StreamMovieAppExercise {
                 ));
 //        mapToCount.forEach((key, value) -> {
 //            System.out.println(key.getName() + " : " + value);
+
 //        });
         var map = directorRepo.findAll()
                 .stream()
